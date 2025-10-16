@@ -948,7 +948,7 @@ void PrintObject::slice_volumes()
 	                m_print->throw_if_canceled();
 	                Layer *layer = m_layers[layer_id];
 	                // Apply size compensation and perform clipping of multi-part objects.
-	                float elfoot = (layer_id == 0) ? elephant_foot_compensation_scaled : 0.f;
+	                float elfoot = (layer_id >= 1 && layer_id <= 3) ? elephant_foot_compensation_scaled : 0.f;
 	                if (layer->m_regions.size() == 1) {
 	                    // Optimized version for a single region layer.
 	                    // Single region, growing or shrinking.
@@ -995,16 +995,6 @@ void PrintObject::slice_volumes()
 	                layer->make_slices();
 	            }
 	        });
-	    if (elephant_foot_compensation_scaled > 0.f && ! m_layers.empty()) {
-	    	// The Elephant foot has been compensated, therefore the 1st layer's lslices are shrank with the Elephant foot compensation value.
-	    	// Store the uncompensated value there.
-            //FIXME is this operation needed? MMU painting and brim now have to do work arounds to work with compensated layer, not with the uncompensated layer.
-            // There may be subtle issues removing this block such as support raft sticking too well with the first object layer.
-            Layer &layer = *m_layers.front();
-	    	assert(layer.id() == 0);
-			layer.lslices = std::move(lslices_1st_layer);
-            layer.lslice_indices_sorted_by_print_order = chain_expolygons(layer.lslices);
-		}
 	}
 
     m_print->throw_if_canceled();
